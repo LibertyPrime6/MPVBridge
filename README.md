@@ -48,6 +48,12 @@ Windows 10/11 不允许普通桌面程序静默改写受保护的 `UserChoice`�
 确认需要在系统设置中完成；取消勾选只移除 MPVBridge 自己的候选注册，不会
 破坏其他播放器的关联。
 
+网页媒体不需要注册本地文件扩展名。若要从 Bilibili、YouTube 等网页将媒体交给
+MPVBridge，请安装配套的
+[External Player for MPVBridge](https://github.com/LibertyPrime6/external-player-mpvbridge)
+油猴脚本；它通过 `mpvbridge://` 协议调用 MPVBridge，并继续使用相同的 Profile
+选择与参数透传流程。
+
 ## 网页调用协议
 
 Profile 管理窗口的“系统集成”区域提供 `mpvbridge://` 的注册与注销按钮。
