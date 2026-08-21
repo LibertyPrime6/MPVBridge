@@ -145,9 +145,10 @@ MPVBridge.exe --bridge-profile="Light_Player" "https://example/video"
 
 - MSVC `v145`、ISO C++20、Unicode 和 `/utf-8`。
 - `/SUBSYSTEM:WINDOWS` 与 `wWinMain`，不会创建控制台窗口。
-- `AdditionalManifestFiles` 嵌入 `app.manifest`。
+- 源码、头文件和 Win32 资源统一保存在 `src` 目录，仓库根目录只保留构建入口与文档。
+- `AdditionalManifestFiles` 嵌入 `src\app.manifest`。
 - Common Controls v6、PerMonitorV2 DPI、`asInvoker` 与圆角窗口。
-- 内嵌包含 16–256 像素层级的 `app.ico`，供资源管理器、窗口和任务栏使用。
+- 内嵌包含 16–256 像素层级的 `src\app.ico`，供资源管理器、窗口和任务栏使用。
 - Release 全程序优化、COMDAT 折叠和无引用代码移除。
 - 仅链接 Windows 系统库，不需要分发额外 DLL。
 - 示例 `profiles.ini` 保留在项目目录中；构建不会覆盖输出目录里正在使用的配置。

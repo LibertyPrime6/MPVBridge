@@ -15,41 +15,42 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AppCore.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="CommandLine.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="Logger.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="main.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="MediaAssociations.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="MpvIpc.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="PlaybackFeedback.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="ProcessLauncher.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="ProfileManager.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="ProfilePicker.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="ProtocolHandler.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="Profiles.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="UiCommon.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="YtdlpPreflight.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="src\AppCore.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="src\CommandLine.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="src\Logger.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="src\main.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="src\MediaAssociations.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="src\MpvIpc.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="src\PlaybackFeedback.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="src\ProcessLauncher.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="src\ProfileManager.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="src\ProfilePicker.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="src\ProtocolHandler.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="src\Profiles.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="src\UiCommon.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="src\YtdlpPreflight.cpp"><Filter>Source Files</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AppCore.h"><Filter>Header Files</Filter></ClInclude>
-    <ClInclude Include="CommandLine.h"><Filter>Header Files</Filter></ClInclude>
-    <ClInclude Include="Logger.h"><Filter>Header Files</Filter></ClInclude>
-    <ClInclude Include="MediaAssociations.h"><Filter>Header Files</Filter></ClInclude>
-    <ClInclude Include="MpvIpc.h"><Filter>Header Files</Filter></ClInclude>
-    <ClInclude Include="PlaybackFeedback.h"><Filter>Header Files</Filter></ClInclude>
-    <ClInclude Include="ProcessLauncher.h"><Filter>Header Files</Filter></ClInclude>
-    <ClInclude Include="ProfileManager.h"><Filter>Header Files</Filter></ClInclude>
-    <ClInclude Include="ProfilePicker.h"><Filter>Header Files</Filter></ClInclude>
-    <ClInclude Include="ProtocolHandler.h"><Filter>Header Files</Filter></ClInclude>
-    <ClInclude Include="Profiles.h"><Filter>Header Files</Filter></ClInclude>
-    <ClInclude Include="resource.h"><Filter>Header Files</Filter></ClInclude>
-    <ClInclude Include="UiCommon.h"><Filter>Header Files</Filter></ClInclude>
-    <ClInclude Include="YtdlpPreflight.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="src\AppCore.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="src\CommandLine.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="src\Logger.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="src\MediaAssociations.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="src\MpvIpc.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="src\PlaybackFeedback.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="src\ProcessLauncher.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="src\ProfileManager.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="src\ProfilePicker.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="src\ProtocolHandler.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="src\Profiles.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="src\resource.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="src\UiCommon.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="src\YtdlpPreflight.h"><Filter>Header Files</Filter></ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="app.rc"><Filter>Resource Files</Filter></ResourceCompile>
-    <Manifest Include="app.manifest"><Filter>Resource Files</Filter></Manifest>
-    <Image Include="app.ico"><Filter>Resource Files</Filter></Image>
+    <ResourceCompile Include="src\app.rc"><Filter>Resource Files</Filter></ResourceCompile>
+    <Manifest Include="src\app.manifest"><Filter>Resource Files</Filter></Manifest>
+    <Image Include="src\app.ico"><Filter>Resource Files</Filter></Image>
+    <None Include="src\External Player-YTDL Labels.lua"><Filter>Resource Files</Filter></None>
     <None Include="profiles.ini"><Filter>Resource Files</Filter></None>
     <None Include="README.md" />
   </ItemGroup>
