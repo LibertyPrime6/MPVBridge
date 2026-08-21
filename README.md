@@ -52,8 +52,7 @@ Windows 10/11 不允许普通桌面程序静默改写受保护的 `UserChoice`�
 
 Profile 管理窗口的“系统集成”区域提供 `mpvbridge://` 的注册与注销按钮。
 注册写入当前用户的 `HKCU\Software\Classes\mpvbridge`，不需要管理员权限；
-注销只会移除由当前这份 `MPVBridge.exe` 拥有的注册，不会修改旧的 `ush://`
-协议或其他应用。
+注销只会移除由当前这份 `MPVBridge.exe` 拥有的注册。
 
 配套 External Player 油猴脚本使用以下格式调用：
 
