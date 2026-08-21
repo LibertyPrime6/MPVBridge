@@ -66,7 +66,7 @@
       <AdditionalDependencies>Comctl32.lib;Shell32.lib;User32.lib;Dwmapi.lib;UxTheme.lib;Ole32.lib;Uuid.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
-      <AdditionalManifestFiles>app.manifest;%(AdditionalManifestFiles)</AdditionalManifestFiles>
+      <AdditionalManifestFiles>src\app.manifest;%(AdditionalManifestFiles)</AdditionalManifestFiles>
       <EnableSegmentHeap>true</EnableSegmentHeap>
     </Manifest>
   </ItemDefinitionGroup>
@@ -90,52 +90,52 @@
       <AdditionalDependencies>Comctl32.lib;Shell32.lib;User32.lib;Dwmapi.lib;UxTheme.lib;Ole32.lib;Uuid.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
-      <AdditionalManifestFiles>app.manifest;%(AdditionalManifestFiles)</AdditionalManifestFiles>
+      <AdditionalManifestFiles>src\app.manifest;%(AdditionalManifestFiles)</AdditionalManifestFiles>
       <EnableSegmentHeap>true</EnableSegmentHeap>
     </Manifest>
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <ClCompile Include="AppCore.cpp" />
-    <ClCompile Include="CommandLine.cpp" />
-    <ClCompile Include="Logger.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="MediaAssociations.cpp" />
-    <ClCompile Include="MpvIpc.cpp" />
-    <ClCompile Include="PlaybackFeedback.cpp" />
-    <ClCompile Include="ProcessLauncher.cpp" />
-    <ClCompile Include="ProfileManager.cpp" />
-    <ClCompile Include="ProfilePicker.cpp" />
-    <ClCompile Include="ProtocolHandler.cpp" />
-    <ClCompile Include="Profiles.cpp" />
-    <ClCompile Include="UiCommon.cpp" />
-    <ClCompile Include="YtdlpPreflight.cpp" />
+    <ClCompile Include="src\AppCore.cpp" />
+    <ClCompile Include="src\CommandLine.cpp" />
+    <ClCompile Include="src\Logger.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\MediaAssociations.cpp" />
+    <ClCompile Include="src\MpvIpc.cpp" />
+    <ClCompile Include="src\PlaybackFeedback.cpp" />
+    <ClCompile Include="src\ProcessLauncher.cpp" />
+    <ClCompile Include="src\ProfileManager.cpp" />
+    <ClCompile Include="src\ProfilePicker.cpp" />
+    <ClCompile Include="src\ProtocolHandler.cpp" />
+    <ClCompile Include="src\Profiles.cpp" />
+    <ClCompile Include="src\UiCommon.cpp" />
+    <ClCompile Include="src\YtdlpPreflight.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AppCore.h" />
-    <ClInclude Include="CommandLine.h" />
-    <ClInclude Include="Logger.h" />
-    <ClInclude Include="MediaAssociations.h" />
-    <ClInclude Include="MpvIpc.h" />
-    <ClInclude Include="PlaybackFeedback.h" />
-    <ClInclude Include="ProcessLauncher.h" />
-    <ClInclude Include="ProfileManager.h" />
-    <ClInclude Include="ProfilePicker.h" />
-    <ClInclude Include="ProtocolHandler.h" />
-    <ClInclude Include="Profiles.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="UiCommon.h" />
-    <ClInclude Include="YtdlpPreflight.h" />
+    <ClInclude Include="src\AppCore.h" />
+    <ClInclude Include="src\CommandLine.h" />
+    <ClInclude Include="src\Logger.h" />
+    <ClInclude Include="src\MediaAssociations.h" />
+    <ClInclude Include="src\MpvIpc.h" />
+    <ClInclude Include="src\PlaybackFeedback.h" />
+    <ClInclude Include="src\ProcessLauncher.h" />
+    <ClInclude Include="src\ProfileManager.h" />
+    <ClInclude Include="src\ProfilePicker.h" />
+    <ClInclude Include="src\ProtocolHandler.h" />
+    <ClInclude Include="src\Profiles.h" />
+    <ClInclude Include="src\resource.h" />
+    <ClInclude Include="src\UiCommon.h" />
+    <ClInclude Include="src\YtdlpPreflight.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="app.rc" />
+    <ResourceCompile Include="src\app.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="app.ico" />
+    <Image Include="src\app.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Manifest Include="app.manifest" />
-    <None Include="External Player-YTDL Labels.lua" />
+    <Manifest Include="src\app.manifest" />
+    <None Include="src\External Player-YTDL Labels.lua" />
     <None Include="profiles.ini" />
     <None Include="README.md" />
   </ItemGroup>
