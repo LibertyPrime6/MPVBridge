@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4B04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;inl</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4C08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;manifest;ini</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AppCore.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="CommandLine.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="Logger.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="main.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="MediaAssociations.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="MpvIpc.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="PlaybackFeedback.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="ProcessLauncher.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="ProfileManager.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="ProfilePicker.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="ProtocolHandler.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="Profiles.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="UiCommon.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="YtdlpPreflight.cpp"><Filter>Source Files</Filter></ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AppCore.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="CommandLine.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="Logger.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="MediaAssociations.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="MpvIpc.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="PlaybackFeedback.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="ProcessLauncher.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="ProfileManager.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="ProfilePicker.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="ProtocolHandler.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="Profiles.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="resource.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="UiCommon.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="YtdlpPreflight.h"><Filter>Header Files</Filter></ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="app.rc"><Filter>Resource Files</Filter></ResourceCompile>
+    <Manifest Include="app.manifest"><Filter>Resource Files</Filter></Manifest>
+    <Image Include="app.ico"><Filter>Resource Files</Filter></Image>
+    <None Include="profiles.ini"><Filter>Resource Files</Filter></None>
+    <None Include="README.md" />
+  </ItemGroup>
+</Project>

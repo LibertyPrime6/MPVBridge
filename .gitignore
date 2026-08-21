@@ -1,0 +1,35 @@
+# Visual Studio user state and caches
+.vs/
+*.user
+*.suo
+*.VC.db
+*.VC.opendb
+
+# Build output and intermediate files
+x64/
+MPVBridge/x64/
+Debug/
+Release/
+*.obj
+*.pdb
+*.idb
+*.ipch
+*.ilk
+*.tlog
+*.lastbuildstate
+*.log
+
+# Compiled binaries and libraries
+*.exe
+*.dll
+*.lib
+*.exp
+
+# Local backup artifacts
+backup/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*~
