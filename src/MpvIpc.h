@@ -7,4 +7,5 @@
 class PlaybackFeedbackServer;
 
 void MonitorMpvJsonIpc(std::wstring_view pipeName, HANDLE process,
-                       PlaybackFeedbackServer& feedback);
+                       PlaybackFeedbackServer& feedback,
+                       bool requestBilibiliDanmaku);

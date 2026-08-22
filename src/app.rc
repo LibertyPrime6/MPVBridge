@@ -7,8 +7,8 @@ IDI_APP_ICON ICON "app.ico"
 IDR_YTDL_LABEL_SCRIPT RCDATA "External Player-YTDL Labels.lua"
 
 IDR_VERSION_INFO VERSIONINFO
- FILEVERSION 1,4,0,0
- PRODUCTVERSION 1,4,0,0
+ FILEVERSION 1,4,1,0
+ PRODUCTVERSION 1,4,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS VS_FF_DEBUG
@@ -25,11 +25,11 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "MPVBridge"
             VALUE "FileDescription", "MPVBridge"
-            VALUE "FileVersion", "1.4.0.0"
+            VALUE "FileVersion", "1.4.1.0"
             VALUE "InternalName", "MPVBridge"
             VALUE "OriginalFilename", "MPVBridge.exe"
             VALUE "ProductName", "MPVBridge"
-            VALUE "ProductVersion", "1.4.0.0"
+            VALUE "ProductVersion", "1.4.1.0"
         END
     END
     BLOCK "VarFileInfo"

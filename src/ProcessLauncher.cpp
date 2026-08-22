@@ -35,6 +35,8 @@ constexpr std::wstring_view kValidationOnlyArgument =
     L"--mpvbridge-validation-only=";
 constexpr std::wstring_view kYtdlLabelScriptArgument =
     L"--mpvbridge-ytdl-label-script=";
+constexpr std::wstring_view kBilibiliDanmakuScriptOption =
+    L"--script-opts-append=mpvbridge-bilibili-danmaku=yes";
 constexpr std::wstring_view kYtdlLabelScriptFileName =
     L"External Player-YTDL Labels.lua";
 constexpr size_t kMaximumCookiePayloadCharacters = 2 * 1024 * 1024;
@@ -45,6 +47,7 @@ struct WebIntegrationControl {
     uint16_t feedbackPort = 0;
     bool expectsCookieTransfer = false;
     bool validationOnly = false;
+    bool requestsBilibiliDanmaku = false;
 };
 
 bool StartsWithInsensitive(std::wstring_view value, std::wstring_view prefix) {
@@ -573,6 +576,15 @@ bool PrepareLaunchTail(std::wstring_view originalTail, std::wstring& preparedTai
     }
     webControl.enabled = anyWebControl;
 
+    if (webControl.enabled) {
+        const auto danmakuOption = std::remove_if(
+            arguments.begin(), arguments.end(), [](const std::wstring& argument) {
+                return EqualsInsensitive(argument, kBilibiliDanmakuScriptOption);
+            });
+        webControl.requestsBilibiliDanmaku = danmakuOption != arguments.end();
+        arguments.erase(danmakuOption, arguments.end());
+    }
+
     // The companion userscript already requests Node for YouTube. Keep this
     // guarantee inside the Bridge as well so older script copies still work.
     // Only the runtime name is persisted in the command; PATH resolves either
@@ -796,7 +808,8 @@ DWORD LaunchAndWait(const ProfileStore& store, const Profile& profile,
         const std::wstring pipeName =
             L"\\\\.\\pipe\\MPVBridge-" + webControl.session;
         ipcMonitor = std::thread([&, pipeName] {
-            MonitorMpvJsonIpc(pipeName, process.hProcess, feedback);
+            MonitorMpvJsonIpc(pipeName, process.hProcess, feedback,
+                              webControl.requestsBilibiliDanmaku);
         });
     }
     DWORD exitCode = 1;

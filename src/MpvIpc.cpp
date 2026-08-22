@@ -103,15 +103,17 @@ std::optional<bool> BooleanValue(std::string_view json, std::string_view key) {
     return std::nullopt;
 }
 
-void ProcessEvent(std::string_view line, PlaybackFeedbackServer& feedback) {
+bool ProcessEvent(std::string_view line, PlaybackFeedbackServer& feedback) {
     const auto requestId = NumberValue(line, "request_id");
-    if (!requestId.has_value()) return;
+    if (!requestId.has_value()) return false;
     const int id = static_cast<int>(*requestId);
     const std::string_view property = id == 101 ? "time-pos" :
         id == 102 ? "duration" : id == 103 ? "pause" :
         id == 104 ? "path" : id == 105 ? "playlist-pos" :
         id == 106 ? "media-title" : "";
-    if (property.empty()) return;
+    if (property.empty()) return false;
+
+    bool playbackPathReady = false;
 
     if (property == "time-pos" || property == "duration" ||
         property == "playlist-pos") {
@@ -124,10 +126,14 @@ void ProcessEvent(std::string_view line, PlaybackFeedbackServer& feedback) {
         const auto valuePosition = FindValue(line, "data");
         if (valuePosition.has_value()) {
             const auto value = ParseJsonString(line, *valuePosition);
-            if (value.has_value()) feedback.SetPlaybackString(property, *value);
+            if (value.has_value()) {
+                feedback.SetPlaybackString(property, *value);
+                playbackPathReady = property == "path" && !value->empty();
+            }
         }
     }
     feedback.SetPhase("playing");
+    return playbackPathReady;
 }
 
 bool RequestPlaybackSnapshot(HANDLE pipe) {
@@ -162,7 +168,8 @@ bool SendAll(HANDLE pipe, std::string_view command) {
 } // namespace
 
 void MonitorMpvJsonIpc(std::wstring_view pipeName, HANDLE process,
-                       PlaybackFeedbackServer& feedback) {
+                       PlaybackFeedbackServer& feedback,
+                       bool requestBilibiliDanmaku) {
     feedback.SetIpcConnecting();
     const auto deadline = std::chrono::steady_clock::now() +
                           std::chrono::milliseconds(kPipeConnectTimeoutMilliseconds);
@@ -192,6 +199,7 @@ void MonitorMpvJsonIpc(std::wstring_view pipeName, HANDLE process,
     std::string pending;
     char buffer[8192];
     auto nextSnapshot = std::chrono::steady_clock::now();
+    bool bilibiliDanmakuRequested = false;
     while (ProcessIsRunning(process)) {
         const auto now = std::chrono::steady_clock::now();
         if (now >= nextSnapshot) {
@@ -199,7 +207,11 @@ void MonitorMpvJsonIpc(std::wstring_view pipeName, HANDLE process,
                 feedback.SetIpcFailed("Unable to request MPV JSON IPC playback snapshot");
                 break;
             }
-            nextSnapshot = now + kPlaybackSnapshotInterval;
+            nextSnapshot = now +
+                (requestBilibiliDanmaku && !bilibiliDanmakuRequested
+                     ? std::chrono::milliseconds(250)
+                     : std::chrono::duration_cast<std::chrono::milliseconds>(
+                           kPlaybackSnapshotInterval));
         }
         DWORD available = 0;
         if (PeekNamedPipe(pipe, nullptr, 0, nullptr, &available, nullptr) == FALSE) {
@@ -220,7 +232,17 @@ void MonitorMpvJsonIpc(std::wstring_view pipeName, HANDLE process,
             std::string line = pending.substr(0, newline);
             pending.erase(0, newline + 1);
             if (!line.empty() && line.back() == '\r') line.pop_back();
-            ProcessEvent(line, feedback);
+            const bool playbackPathReady = ProcessEvent(line, feedback);
+            if (requestBilibiliDanmaku && !bilibiliDanmakuRequested &&
+                playbackPathReady) {
+                constexpr std::string_view command =
+                    "{\"command\":[\"script-message-to\",\"uosc_danmaku\","
+                    "\"set\",\"show_danmaku\",\"on\"],\"request_id\":201}\n";
+                // script-message-to is intentionally best-effort. MPV accepts
+                // the command even when the target script is absent, so a
+                // profile without uosc_danmaku continues normal playback.
+                bilibiliDanmakuRequested = SendAll(pipe, command);
+            }
         }
         if (pending.size() > 1024 * 1024) pending.clear();
     }
