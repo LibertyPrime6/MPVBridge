@@ -1,6 +1,7 @@
 #include "YtdlpPreflight.h"
 
 #include "AppCore.h"
+#include "PortableEnvironment.h"
 
 #include <shellapi.h>
 
@@ -212,26 +213,8 @@ std::optional<std::wstring> MapRawOption(std::wstring_view key) {
     return std::nullopt;
 }
 
-std::filesystem::path FindYtdlp(const Profile& profile) {
-    const std::filesystem::path moduleDirectory = GetModulePath().parent_path();
-    const std::filesystem::path playerDirectory = profile.executable.parent_path();
-    const std::filesystem::path candidates[] = {
-        moduleDirectory / L"yt-dlp.exe",
-        moduleDirectory.parent_path() / L"Tools" / L"yt-dlp" / L"yt-dlp.exe",
-        playerDirectory / L"yt-dlp.exe",
-        playerDirectory.parent_path() / L"Tools" / L"yt-dlp" / L"yt-dlp.exe"
-    };
-    std::error_code error;
-    for (const auto& candidate : candidates) {
-        if (std::filesystem::is_regular_file(candidate, error)) return candidate;
-        error.clear();
-    }
-    std::vector<wchar_t> buffer(32768, L'\0');
-    const DWORD length = SearchPathW(nullptr, L"yt-dlp.exe", nullptr,
-                                     static_cast<DWORD>(buffer.size()),
-                                     buffer.data(), nullptr);
-    if (length > 0 && length < buffer.size()) return std::filesystem::path(buffer.data());
-    return {};
+std::filesystem::path FindYtdlp(const Profile&) {
+    return DetectEnvironmentTool(EnvironmentTool::Ytdlp).path;
 }
 
 struct ProcessResult {
@@ -308,6 +291,7 @@ ProcessResult RunProcess(const std::filesystem::path& executable,
     {
         ScopedEnvironmentVariable pythonIoEncoding(L"PYTHONIOENCODING", L"utf-8");
         ScopedEnvironmentVariable pythonUtf8(L"PYTHONUTF8", L"1");
+        ScopedPortableChildPath portablePath;
         created = CreateProcessW(executable.c_str(), writable.data(), nullptr, nullptr,
                                  TRUE, CREATE_NO_WINDOW, nullptr,
                                  executable.parent_path().c_str(), &startup, &process);

@@ -63,7 +63,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Comctl32.lib;Shell32.lib;User32.lib;Dwmapi.lib;UxTheme.lib;Ole32.lib;Uuid.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Comctl32.lib;Shell32.lib;User32.lib;Dwmapi.lib;UxTheme.lib;Ole32.lib;Uuid.lib;Ws2_32.lib;Winhttp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <AdditionalManifestFiles>src\app.manifest;%(AdditionalManifestFiles)</AdditionalManifestFiles>
@@ -87,7 +87,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>Comctl32.lib;Shell32.lib;User32.lib;Dwmapi.lib;UxTheme.lib;Ole32.lib;Uuid.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Comctl32.lib;Shell32.lib;User32.lib;Dwmapi.lib;UxTheme.lib;Ole32.lib;Uuid.lib;Ws2_32.lib;Winhttp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <AdditionalManifestFiles>src\app.manifest;%(AdditionalManifestFiles)</AdditionalManifestFiles>
@@ -98,11 +98,13 @@
   <ItemGroup>
     <ClCompile Include="src\AppCore.cpp" />
     <ClCompile Include="src\CommandLine.cpp" />
+    <ClCompile Include="src\EnvironmentManager.cpp" />
     <ClCompile Include="src\Logger.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MediaAssociations.cpp" />
     <ClCompile Include="src\MpvIpc.cpp" />
     <ClCompile Include="src\PlaybackFeedback.cpp" />
+    <ClCompile Include="src\PortableEnvironment.cpp" />
     <ClCompile Include="src\ProcessLauncher.cpp" />
     <ClCompile Include="src\ProfileManager.cpp" />
     <ClCompile Include="src\ProfilePicker.cpp" />
@@ -114,10 +116,12 @@
   <ItemGroup>
     <ClInclude Include="src\AppCore.h" />
     <ClInclude Include="src\CommandLine.h" />
+    <ClInclude Include="src\EnvironmentManager.h" />
     <ClInclude Include="src\Logger.h" />
     <ClInclude Include="src\MediaAssociations.h" />
     <ClInclude Include="src\MpvIpc.h" />
     <ClInclude Include="src\PlaybackFeedback.h" />
+    <ClInclude Include="src\PortableEnvironment.h" />
     <ClInclude Include="src\ProcessLauncher.h" />
     <ClInclude Include="src\ProfileManager.h" />
     <ClInclude Include="src\ProfilePicker.h" />

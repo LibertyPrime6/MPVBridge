@@ -4,6 +4,7 @@
 #include "Logger.h"
 #include "MpvIpc.h"
 #include "PlaybackFeedback.h"
+#include "PortableEnvironment.h"
 #include "YtdlpPreflight.h"
 #include "resource.h"
 
@@ -12,6 +13,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
+#include <cwctype>
 #include <filesystem>
 #include <limits>
 #include <string>
@@ -48,6 +50,14 @@ struct WebIntegrationControl {
 bool StartsWithInsensitive(std::wstring_view value, std::wstring_view prefix) {
     return value.size() >= prefix.size() &&
            EqualsInsensitive(value.substr(0, prefix.size()), prefix);
+}
+
+bool ContainsInsensitive(std::wstring_view value, std::wstring_view needle) {
+    if (needle.empty()) return true;
+    return std::search(value.begin(), value.end(), needle.begin(), needle.end(),
+                       [](wchar_t left, wchar_t right) {
+                           return towlower(left) == towlower(right);
+                       }) != value.end();
 }
 
 std::wstring QuoteCommandArgument(std::wstring_view value) {
@@ -385,6 +395,22 @@ void AddCookieRawOption(std::vector<std::wstring>& arguments,
     }
 }
 
+void EnsureNodeJsRuntimeOption(std::vector<std::wstring>& arguments) {
+    if (!DetectEnvironmentTool(EnvironmentTool::Node).available) return;
+    constexpr std::wstring_view rawOptionsPrefix = L"--ytdl-raw-options=";
+    for (std::wstring& argument : arguments) {
+        if (!StartsWithInsensitive(argument, rawOptionsPrefix)) continue;
+        if (ContainsInsensitive(argument.substr(rawOptionsPrefix.size()),
+                                L"js-runtimes=")) {
+            return;
+        }
+        if (argument.size() > rawOptionsPrefix.size()) argument.push_back(L',');
+        argument.append(L"js-runtimes=node");
+        return;
+    }
+    arguments.emplace_back(L"--ytdl-raw-options=js-runtimes=node");
+}
+
 void RebuildTail(const std::vector<std::wstring>& arguments,
                  std::wstring& preparedTail) {
     preparedTail.clear();
@@ -546,6 +572,12 @@ bool PrepareLaunchTail(std::wstring_view originalTail, std::wstring& preparedTai
         return false;
     }
     webControl.enabled = anyWebControl;
+
+    // The companion userscript already requests Node for YouTube. Keep this
+    // guarantee inside the Bridge as well so older script copies still work.
+    // Only the runtime name is persisted in the command; PATH resolves either
+    // the system installation or the relative Tools fallback at launch time.
+    if (webControl.enabled) EnsureNodeJsRuntimeOption(arguments);
 
     // The common path remains byte-for-byte pass-through. In particular, an
     // unrelated application that supplies its own --input-ipc-server is never
@@ -730,9 +762,16 @@ DWORD LaunchAndWait(const ProfileStore& store, const Profile& profile,
     PROCESS_INFORMATION process{};
     const std::filesystem::path workingDirectory =
         profile.executable.parent_path();
-    if (CreateProcessW(profile.executable.c_str(), writable.data(), nullptr, nullptr,
-                       TRUE, 0, nullptr, workingDirectory.c_str(), &startup,
-                       &process) == FALSE) {
+    BOOL processCreated = FALSE;
+    {
+        // System PATH entries stay first. MPVBridge-local Tools folders are
+        // appended only as a portable fallback and never persisted.
+        ScopedPortableChildPath portablePath;
+        processCreated = CreateProcessW(
+            profile.executable.c_str(), writable.data(), nullptr, nullptr, TRUE,
+            0, nullptr, workingDirectory.c_str(), &startup, &process);
+    }
+    if (processCreated == FALSE) {
         WriteDiagnosticLog(store, L"CreateProcessW 失败：" +
                                       FormatSystemError(GetLastError()));
         ShowError(L"无法启动目标 MPV：\n" + profile.executable.wstring() +

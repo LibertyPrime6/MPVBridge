@@ -1,6 +1,7 @@
 #include "ProfileManager.h"
 
 #include "AppCore.h"
+#include "EnvironmentManager.h"
 #include "Logger.h"
 #include "MediaAssociations.h"
 #include "ProtocolHandler.h"
@@ -41,6 +42,7 @@ enum ControlId : int {
     IdOpenLog,
     IdStatus,
     IdMediaAssociations,
+    IdEnvironmentManager,
     IdAutoLaunchLabel,
     IdAutoLaunchSeconds,
     IdAutoLaunchSuffix,
@@ -189,20 +191,23 @@ void Layout(ManagerState& state) {
 
     const int integrationY = bottom - S(state, 182);
     SetWindowPos(GetDlgItem(state.window, IdMediaAssociations), nullptr,
-                 fieldX, integrationY, S(state, 132), S(state, 32),
+                 fieldX, integrationY, S(state, 112), S(state, 32),
                  SWP_NOZORDER);
+    SetWindowPos(GetDlgItem(state.window, IdEnvironmentManager), nullptr,
+                 fieldX + S(state, 120), integrationY, S(state, 112),
+                 S(state, 32), SWP_NOZORDER);
     SetWindowPos(GetDlgItem(state.window, IdAutoLaunchLabel), nullptr,
-                 fieldX + S(state, 148), integrationY, S(state, 110),
+                 fieldX + S(state, 242), integrationY, S(state, 86),
                  S(state, 32), SWP_NOZORDER);
     SetWindowPos(state.autoLaunchEdit, nullptr,
-                 fieldX + S(state, 272), integrationY + S(state, 4),
-                 S(state, 56), S(state, 24), SWP_NOZORDER);
+                 fieldX + S(state, 334), integrationY + S(state, 4),
+                 S(state, 42), S(state, 24), SWP_NOZORDER);
     SetWindowPos(GetDlgItem(state.window, IdAutoLaunchSuffix), nullptr,
-                 fieldX + S(state, 340), integrationY, S(state, 24),
+                 fieldX + S(state, 382), integrationY, S(state, 18),
                  S(state, 32), SWP_NOZORDER);
     SetWindowPos(GetDlgItem(state.window, IdSaveAutoLaunch), nullptr,
-                  fieldX + S(state, 376), integrationY, S(state, 72),
-                  S(state, 32), SWP_NOZORDER);
+                 fieldX + S(state, 408), integrationY, S(state, 58),
+                 S(state, 32), SWP_NOZORDER);
 
     const int protocolY = bottom - S(state, 140);
     SetWindowPos(state.protocolStatus, nullptr, fieldX, protocolY,
@@ -842,6 +847,8 @@ void CreateControls(ManagerState& state) {
     Control(state, 0, L"BUTTON", L"打开日志", WS_TABSTOP, IdOpenLog);
     Control(state, 0, L"BUTTON", L"媒体文件关联…", WS_TABSTOP,
             IdMediaAssociations);
+    Control(state, 0, L"BUTTON", L"运行环境检测…", WS_TABSTOP,
+            IdEnvironmentManager);
     Control(state, 0, L"STATIC", L"默认自动进入", SS_LEFT,
             IdAutoLaunchLabel);
     state.autoLaunchEdit = Control(
@@ -869,6 +876,8 @@ void CreateControls(ManagerState& state) {
     ui::StyleButton(state.logging, ui::ButtonStyle::Toggle);
     ui::StyleButton(GetDlgItem(state.window, IdOpenLog), ui::ButtonStyle::Secondary);
     ui::StyleButton(GetDlgItem(state.window, IdMediaAssociations),
+                    ui::ButtonStyle::Secondary);
+    ui::StyleButton(GetDlgItem(state.window, IdEnvironmentManager),
                     ui::ButtonStyle::Secondary);
     ui::StyleButton(GetDlgItem(state.window, IdSaveAutoLaunch),
                      ui::ButtonStyle::Primary);
@@ -1129,6 +1138,9 @@ LRESULT HandleCommand(ManagerState& state, WPARAM wParam, LPARAM lParam) {
         return 0;
     case IdMediaAssociations:
         RunMediaAssociationsDialog(state.instance, state.window);
+        return 0;
+    case IdEnvironmentManager:
+        RunEnvironmentManagerDialog(state.instance, state.window);
         return 0;
     case IdRegisterProtocol: {
         std::wstring error;

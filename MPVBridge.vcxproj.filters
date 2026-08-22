@@ -17,11 +17,13 @@
   <ItemGroup>
     <ClCompile Include="src\AppCore.cpp"><Filter>Source Files</Filter></ClCompile>
     <ClCompile Include="src\CommandLine.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="src\EnvironmentManager.cpp"><Filter>Source Files</Filter></ClCompile>
     <ClCompile Include="src\Logger.cpp"><Filter>Source Files</Filter></ClCompile>
     <ClCompile Include="src\main.cpp"><Filter>Source Files</Filter></ClCompile>
     <ClCompile Include="src\MediaAssociations.cpp"><Filter>Source Files</Filter></ClCompile>
     <ClCompile Include="src\MpvIpc.cpp"><Filter>Source Files</Filter></ClCompile>
     <ClCompile Include="src\PlaybackFeedback.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="src\PortableEnvironment.cpp"><Filter>Source Files</Filter></ClCompile>
     <ClCompile Include="src\ProcessLauncher.cpp"><Filter>Source Files</Filter></ClCompile>
     <ClCompile Include="src\ProfileManager.cpp"><Filter>Source Files</Filter></ClCompile>
     <ClCompile Include="src\ProfilePicker.cpp"><Filter>Source Files</Filter></ClCompile>
@@ -33,10 +35,12 @@
   <ItemGroup>
     <ClInclude Include="src\AppCore.h"><Filter>Header Files</Filter></ClInclude>
     <ClInclude Include="src\CommandLine.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="src\EnvironmentManager.h"><Filter>Header Files</Filter></ClInclude>
     <ClInclude Include="src\Logger.h"><Filter>Header Files</Filter></ClInclude>
     <ClInclude Include="src\MediaAssociations.h"><Filter>Header Files</Filter></ClInclude>
     <ClInclude Include="src\MpvIpc.h"><Filter>Header Files</Filter></ClInclude>
     <ClInclude Include="src\PlaybackFeedback.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="src\PortableEnvironment.h"><Filter>Header Files</Filter></ClInclude>
     <ClInclude Include="src\ProcessLauncher.h"><Filter>Header Files</Filter></ClInclude>
     <ClInclude Include="src\ProfileManager.h"><Filter>Header Files</Filter></ClInclude>
     <ClInclude Include="src\ProfilePicker.h"><Filter>Header Files</Filter></ClInclude>

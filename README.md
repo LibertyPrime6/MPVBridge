@@ -48,6 +48,42 @@ Windows 10/11 不允许普通桌面程序静默改写受保护的 `UserChoice`�
 确认需要在系统设置中完成；取消勾选只移除 MPVBridge 自己的候选注册，不会
 破坏其他播放器的关联。
 
+## 运行环境检测与便携安装
+
+Profile 管理窗口的“系统集成”区域提供独立的“运行环境检测”入口。二级界面会
+分别检测 yt-dlp、FFmpeg（同时检查 ffprobe）和 Node.js，并显示实际版本与来源。
+Node.js 必须满足 yt-dlp 当前 EJS 支持要求（22 或更高版本）。
+
+工具解析顺序固定为：
+
+1. 优先使用系统 `PATH` 中已经安装且受支持的版本；
+2. 系统缺失或版本不受支持时，回退到 MPVBridge 程序目录下的便携副本。
+
+每项环境都有独立的“安装便携版”按钮。点击后会在请求发生时解析上游最新版本，
+下载并自动配置到以下相对布局。三项下载各自显示平滑递增的进度条，下载期间对应
+按钮会变为“取消下载”，可以分别取消而不影响其他下载；取消完成后会清理本次临时
+文件并隐藏该进度条。进度显示会快速平滑追赶服务器报告的真实下载百分比；安装与
+配置确认完成后，对应进度条也会自动清零并隐藏。
+
+```text
+MPVBridge.exe
+Tools\yt-dlp\yt-dlp.exe
+Tools\ffmpeg\bin\ffmpeg.exe
+Tools\ffmpeg\bin\ffprobe.exe
+Tools\node\node.exe
+```
+
+yt-dlp 使用官方最新 Windows x64 可执行文件，Node.js 使用官方 `latest/win-x64`
+可执行文件，FFmpeg 使用 BtbN 最新 Windows x64 GPL 构建。连接或连续接收数据超过
+30 秒会提示超时，单次总下载超过 10 分钟也会终止并提示；FFmpeg 解压超过 5 分钟
+同样会停止。未完成的临时文件不会被当作已安装环境。
+
+MPV 启动时只临时构造子进程环境，不修改系统 `PATH`，也不把电脑专属绝对路径
+写入 INI、脚本或播放参数。系统目录排在前面，`Tools` 相对布局作为回退。因此可将
+`MPVBridge.exe`、`profiles.ini` 和 `Tools` 整个文件夹复制到其他电脑继续使用。
+配套网页播放会显式传入 yt-dlp 的 `--js-runtimes=node`；Node 的实际位置仍由上述
+系统优先、便携回退规则解析。
+
 网页媒体不需要注册本地文件扩展名。若要从 Bilibili、YouTube 等网页将媒体交给
 MPVBridge，请安装配套的
 [External Player for MPVBridge](https://github.com/LibertyPrime6/external-player-mpvbridge)
@@ -151,6 +187,8 @@ MPVBridge.exe --bridge-profile="Light_Player" "https://example/video"
 - 内嵌包含 16–256 像素层级的 `src\app.ico`，供资源管理器、窗口和任务栏使用。
 - Release 全程序优化、COMDAT 折叠和无引用代码移除。
 - 仅链接 Windows 系统库，不需要分发额外 DLL。
+- 环境安装器通过系统 WinHTTP 下载，并调用 Windows PowerShell 的 `Expand-Archive`
+  解压 FFmpeg；MPVBridge 自身仍不依赖第三方运行时 DLL。
 - 示例 `profiles.ini` 保留在项目目录中；构建不会覆盖输出目录里正在使用的配置。
 
 输出位于 `x64\Debug` 或 `x64\Release`。
