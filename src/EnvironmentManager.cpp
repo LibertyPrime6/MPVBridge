@@ -265,7 +265,7 @@ bool DownloadLatest(HWND window, EnvironmentTool tool, std::wstring_view url,
     }
 
     InternetHandle session;
-    session.value = WinHttpOpen(L"MPVBridge/1.4.2 Environment Installer",
+    session.value = WinHttpOpen(L"MPVBridge/1.4.3 Environment Installer",
                                 WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY,
                                 WINHTTP_NO_PROXY_NAME,
                                 WINHTTP_NO_PROXY_BYPASS, 0);

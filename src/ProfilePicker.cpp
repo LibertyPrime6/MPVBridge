@@ -57,11 +57,39 @@ struct PickerState {
     HWND status{};
     HWND launch{};
     HWND remember{};
+    bool positionSelectionAfterLayout{};
 };
 
 int S(const PickerState& state, int value) { return ui::Scale(value, state.dpi); }
 
 void UpdateSelectionState(PickerState& state);
+
+void PositionSelectedProfile(PickerState& state) {
+    if (!state.positionSelectionAfterLayout || state.list == nullptr) return;
+
+    const int selected =
+        static_cast<int>(SendMessageW(state.list, LB_GETCURSEL, 0, 0));
+    if (selected < 0) {
+        state.positionSelectionAfterLayout = false;
+        return;
+    }
+
+    RECT client{};
+    GetClientRect(state.list, &client);
+    const int itemHeight =
+        static_cast<int>(SendMessageW(state.list, LB_GETITEMHEIGHT, 0, 0));
+    const int clientHeight = client.bottom - client.top;
+    if (itemHeight <= 0 || clientHeight <= 0) return;
+
+    const int visibleItems = std::max(1, clientHeight / itemHeight);
+    const int itemCount =
+        static_cast<int>(SendMessageW(state.list, LB_GETCOUNT, 0, 0));
+    const int maxTopIndex = std::max(0, itemCount - visibleItems);
+    const int topIndex =
+        std::clamp(selected - visibleItems / 2, 0, maxTopIndex);
+    SendMessageW(state.list, LB_SETTOPINDEX, topIndex, 0);
+    state.positionSelectionAfterLayout = false;
+}
 
 void CancelAutoLaunch(PickerState& state, bool userInteraction = true) {
     if (userInteraction) state.userInteracted = true;
@@ -143,6 +171,7 @@ void Layout(PickerState& state) {
     SetWindowPos(state.launch, nullptr,
                  client.right - margin - S(state, 98), client.bottom - S(state, 70),
                  S(state, 98), S(state, 34), SWP_NOZORDER);
+    PositionSelectedProfile(state);
 }
 
 void UpdateSelectionState(PickerState& state) {
@@ -217,6 +246,8 @@ void LoadProfiles(PickerState& state, std::wstring_view preferred = {}) {
     }
     if (selected < 0 && !state.profiles.empty()) selected = 0;
     SendMessageW(state.list, LB_SETCURSEL, selected, 0);
+    state.positionSelectionAfterLayout = true;
+    PositionSelectedProfile(state);
     UpdateSelectionState(state);
     InvalidateRect(state.list, nullptr, TRUE);
     StartAutoLaunch(state);
