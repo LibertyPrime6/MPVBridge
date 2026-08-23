@@ -119,6 +119,13 @@ std::wstring ProfileStore::DefaultId() const {
     return Trim(ReadIniValue(iniPath_, L"General", L"DefaultProfile"));
 }
 
+bool ProfileStore::SkipProfilePicker() const {
+    const std::wstring value =
+        Trim(ReadIniValue(iniPath_, L"General", L"SkipProfilePicker"));
+    return EqualsInsensitive(value, L"1") || EqualsInsensitive(value, L"true") ||
+           EqualsInsensitive(value, L"yes");
+}
+
 bool ProfileStore::LoggingEnabled() const {
     const std::wstring value =
         Trim(ReadIniValue(iniPath_, L"General", L"EnableLogging"));
@@ -142,6 +149,7 @@ bool ProfileStore::Save(const Profile& profile, std::wstring_view originalId,
                         std::wstring& error) const {
     int order = profile.order;
     const std::vector<Profile> existingProfiles = Load();
+    const bool isFirstProfile = originalId.empty() && existingProfiles.empty();
     if (!originalId.empty()) {
         if (const Profile* existing = FindProfile(existingProfiles, originalId)) {
             order = existing->order;
@@ -171,22 +179,47 @@ bool ProfileStore::Save(const Profile& profile, std::wstring_view originalId,
             return false;
         }
     }
+    if (isFirstProfile && !SetDefault(profile.id, error)) {
+        return false;
+    }
     FlushIni(iniPath_);
     return true;
 }
 
 bool ProfileStore::Delete(std::wstring_view id, std::wstring& error) const {
+    const std::vector<Profile> existingProfiles = Load();
+    const auto deleting = std::find_if(
+        existingProfiles.begin(), existingProfiles.end(),
+        [id](const Profile& profile) {
+            return EqualsInsensitive(profile.id, id);
+        });
+    const size_t deletedIndex = deleting == existingProfiles.end()
+                                    ? 0
+                                    : static_cast<size_t>(
+                                          std::distance(existingProfiles.begin(),
+                                                        deleting));
+    const bool wasDefault = EqualsInsensitive(DefaultId(), id);
     const std::wstring section(id);
     if (WritePrivateProfileStringW(section.c_str(), nullptr, nullptr,
                                    iniPath_.c_str()) == FALSE) {
         error = FormatSystemError(GetLastError());
         return false;
     }
-    if (EqualsInsensitive(DefaultId(), id) && !SetDefault(L"", error)) {
-        return false;
+    const std::vector<Profile> remainingProfiles = Load();
+    if (wasDefault) {
+        std::wstring nextDefault;
+        if (!remainingProfiles.empty()) {
+            const size_t nextIndex = deletedIndex < remainingProfiles.size()
+                                         ? deletedIndex
+                                         : 0;
+            nextDefault = remainingProfiles[nextIndex].id;
+        }
+        if (!SetDefault(nextDefault, error)) {
+            return false;
+        }
     }
     std::vector<std::wstring> remainingIds;
-    for (const Profile& profile : Load()) {
+    for (const Profile& profile : remainingProfiles) {
         remainingIds.push_back(profile.id);
     }
     if (!SaveOrder(remainingIds, error)) {
@@ -199,6 +232,16 @@ bool ProfileStore::Delete(std::wstring_view id, std::wstring& error) const {
 bool ProfileStore::SetDefault(std::wstring_view id, std::wstring& error) const {
     const std::wstring value(id);
     if (!WriteValue(iniPath_, L"General", L"DefaultProfile", value.c_str(), error)) {
+        return false;
+    }
+    FlushIni(iniPath_);
+    return true;
+}
+
+bool ProfileStore::SetSkipProfilePicker(bool enabled,
+                                        std::wstring& error) const {
+    if (!WriteValue(iniPath_, L"General", L"SkipProfilePicker",
+                    enabled ? L"1" : L"0", error)) {
         return false;
     }
     FlushIni(iniPath_);
@@ -241,9 +284,7 @@ bool ProfileStore::SaveOrder(const std::vector<std::wstring>& profileIds,
     return true;
 }
 
-bool EnsureProfilesIni(const fs::path& iniPath, bool& created,
-                       std::wstring& error) {
-    created = false;
+bool EnsureProfilesIni(const fs::path& iniPath, std::wstring& error) {
     std::error_code pathError;
     const bool exists = fs::exists(iniPath, pathError);
     if (pathError) {
@@ -258,6 +299,7 @@ bool EnsureProfilesIni(const fs::path& iniPath, bool& created,
     static constexpr wchar_t content[] =
         L"[General]\r\n"
         L"DefaultProfile=HQ_Anime\r\n"
+        L"SkipProfilePicker=0\r\n"
         L"EnableLogging=0\r\n"
         L"AutoLaunchSeconds=3\r\n"
         L"\r\n"
@@ -292,7 +334,6 @@ bool EnsureProfilesIni(const fs::path& iniPath, bool& created,
         error = FormatSystemError(GetLastError());
     }
     CloseHandle(file);
-    created = ok;
     return ok;
 }
 

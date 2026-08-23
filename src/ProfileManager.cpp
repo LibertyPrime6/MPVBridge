@@ -43,6 +43,7 @@ enum ControlId : int {
     IdStatus,
     IdMediaAssociations,
     IdEnvironmentManager,
+    IdSkipProfilePicker,
     IdAutoLaunchLabel,
     IdAutoLaunchSeconds,
     IdAutoLaunchSuffix,
@@ -101,6 +102,7 @@ struct ManagerState {
     HWND nameEdit{};
     HWND pathEdit{};
     HWND status{};
+    HWND skipProfilePicker{};
     HWND logging{};
     HWND autoLaunchEdit{};
     HWND protocolStatus{};
@@ -190,6 +192,9 @@ void Layout(ManagerState& state) {
                  SWP_NOZORDER);
 
     const int integrationY = bottom - S(state, 182);
+    SetWindowPos(state.skipProfilePicker, nullptr,
+                 fieldX + fieldWidth - S(state, 230), bottom - S(state, 240),
+                 S(state, 230), S(state, 28), SWP_NOZORDER);
     SetWindowPos(GetDlgItem(state.window, IdMediaAssociations), nullptr,
                  fieldX, integrationY, S(state, 112), S(state, 32),
                  SWP_NOZORDER);
@@ -323,6 +328,23 @@ int BoardPitch(const ManagerState& state) { return S(state, 74); }
 int BoardCardHeight(const ManagerState& state) { return S(state, 66); }
 int BoardPadding(const ManagerState& state) { return S(state, 5); }
 
+void DrawProfileName(ManagerState& state, HDC dc, const Profile& profile,
+                     RECT name) {
+    if (EqualsInsensitive(profile.id, state.defaultId)) {
+        const int badgeWidth = S(state, 44);
+        const int badgeGap = S(state, 8);
+        RECT badge{name.right - badgeWidth, name.top + S(state, 1), name.right,
+                   name.bottom - S(state, 1)};
+        name.right = std::max(name.left, badge.left - badgeGap);
+        ui::FillRounded(dc, badge, S(state, 7), ui::kAccent);
+        ui::DrawTextLine(dc, L"默认", badge, state.smallFont,
+                         RGB(255, 255, 255),
+                         DT_CENTER | DT_SINGLELINE | DT_VCENTER);
+    }
+    ui::DrawTextLine(dc, profile.name, name, state.font, ui::kText,
+                     DT_LEFT | DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER);
+}
+
 bool DragVisualActive(const ManagerState& state) {
     return state.dragging || state.dragAnimating;
 }
@@ -415,10 +437,7 @@ void DrawBoardCard(ManagerState& state, HDC dc, int index, RECT card,
 
     RECT name{card.left + S(state, 40), card.top + S(state, 10),
               card.right - S(state, 14), card.top + S(state, 34)};
-    std::wstring title = profile.name;
-    if (EqualsInsensitive(profile.id, state.defaultId)) title += L"  ·  默认";
-    ui::DrawTextLine(dc, title, name, state.font, ui::kText,
-                     DT_LEFT | DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER);
+    DrawProfileName(state, dc, profile, name);
     RECT idRect{card.left + S(state, 40), card.top + S(state, 35),
                 card.right - S(state, 14), card.bottom - S(state, 7)};
     ui::DrawTextLine(dc, profile.id, idRect, state.smallFont, ui::kMuted,
@@ -849,6 +868,9 @@ void CreateControls(ManagerState& state) {
             IdMediaAssociations);
     Control(state, 0, L"BUTTON", L"运行环境检测…", WS_TABSTOP,
             IdEnvironmentManager);
+    state.skipProfilePicker = Control(
+        state, 0, L"BUTTON", L"多 Profile 时直接使用默认项",
+        WS_TABSTOP | BS_AUTOCHECKBOX, IdSkipProfilePicker);
     Control(state, 0, L"STATIC", L"默认自动进入", SS_LEFT,
             IdAutoLaunchLabel);
     state.autoLaunchEdit = Control(
@@ -879,6 +901,7 @@ void CreateControls(ManagerState& state) {
                     ui::ButtonStyle::Secondary);
     ui::StyleButton(GetDlgItem(state.window, IdEnvironmentManager),
                     ui::ButtonStyle::Secondary);
+    ui::StyleButton(state.skipProfilePicker, ui::ButtonStyle::Toggle);
     ui::StyleButton(GetDlgItem(state.window, IdSaveAutoLaunch),
                      ui::ButtonStyle::Primary);
     ui::StyleButton(GetDlgItem(state.window, IdRegisterProtocol),
@@ -895,6 +918,9 @@ void CreateControls(ManagerState& state) {
         std::to_wstring(state.store->AutoLaunchSeconds()));
     SendMessageW(state.logging, BM_SETCHECK,
                   state.store->LoggingEnabled() ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendMessageW(state.skipProfilePicker, BM_SETCHECK,
+                  state.store->SkipProfilePicker() ? BST_CHECKED : BST_UNCHECKED,
+                  0);
     UpdateProtocolStatus(state);
     RecreateFonts(state);
 }
@@ -931,12 +957,7 @@ void DrawManagerListItem(ManagerState& state, const DRAWITEMSTRUCT& item) {
 
     RECT name{row.left + S(state, 34), row.top + S(state, 9),
               row.right - S(state, 10), row.top + S(state, 31)};
-    std::wstring title = profile.name;
-    if (EqualsInsensitive(profile.id, state.defaultId)) {
-        title += L"  ·  默认";
-    }
-    ui::DrawTextLine(item.hDC, title, name, state.font, ui::kText,
-                     DT_LEFT | DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER);
+    DrawProfileName(state, item.hDC, profile, name);
     RECT idRect{row.left + S(state, 34), row.top + S(state, 32),
                 row.right - S(state, 10), row.bottom - S(state, 6)};
     ui::DrawTextLine(item.hDC, profile.id, idRect, state.smallFont, ui::kMuted,
@@ -1063,6 +1084,14 @@ LRESULT HandleCommand(ManagerState& state, WPARAM wParam, LPARAM lParam) {
             ui::SetWindowTextString(
                 state.autoLaunchEdit,
                 std::to_wstring(state.store->AutoLaunchSeconds()));
+            SendMessageW(
+                state.skipProfilePicker, BM_SETCHECK,
+                state.store->SkipProfilePicker() ? BST_CHECKED : BST_UNCHECKED,
+                0);
+            SendMessageW(state.logging, BM_SETCHECK,
+                         state.store->LoggingEnabled() ? BST_CHECKED
+                                                       : BST_UNCHECKED,
+                         0);
             UpdateProtocolStatus(state);
         }
         return 0;
@@ -1133,6 +1162,22 @@ LRESULT HandleCommand(ManagerState& state, WPARAM wParam, LPARAM lParam) {
         }
         return 0;
     }
+    case IdSkipProfilePicker: {
+        const bool enabled = SendMessageW(state.skipProfilePicker, BM_GETCHECK,
+                                          0, 0) == BST_CHECKED;
+        std::wstring error;
+        if (!state.store->SetSkipProfilePicker(enabled, error)) {
+            ShowError(L"无法更新直接播放设置：\n" + error, state.window);
+            SendMessageW(state.skipProfilePicker, BM_SETCHECK,
+                         enabled ? BST_UNCHECKED : BST_CHECKED, 0);
+        } else {
+            WriteDiagnosticLog(
+                *state.store,
+                enabled ? L"已启用：多 Profile 时直接使用默认项"
+                        : L"已关闭：多 Profile 时显示 Profile 选择窗口");
+        }
+        return 0;
+    }
     case IdOpenLog:
         OpenDiagnosticLog(*state.store, state.window);
         return 0;
@@ -1149,7 +1194,7 @@ LRESULT HandleCommand(ManagerState& state, WPARAM wParam, LPARAM lParam) {
         } else {
             WriteDiagnosticLog(*state.store, L"已注册 mpvbridge:// 网页调用协议");
             ShowInfo(L"mpvbridge:// 已注册到当前 MPVBridge。\n\n"
-                     L"浏览器协议调用将直接进入 Profile 选择界面。",
+                     L"浏览器协议调用将按当前 Profile 设置进入播放流程。",
                      state.window);
         }
         UpdateProtocolStatus(state);

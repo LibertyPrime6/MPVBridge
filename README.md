@@ -7,23 +7,25 @@ MPVBridge 是一个纯 Win32、无第三方依赖的 MPV 会话级透明代理�
 ## 启动模式
 
 - 直接双击、没有媒体参数：打开居中的 **Profile 管理**窗口。
-- 由浏览器、视频网站、文件关联或其他程序传入 URL/文件/MPV 参数：打开
-  居中的 **Profile 选择**窗口；选定后锁定该 Profile 并透传参数。
+- 由浏览器、视频网站、文件关联或其他程序传入 URL/文件/MPV 参数：
+  只有一个 Profile 时直接使用它播放；有多个 Profile 时根据“直接使用默认项”
+  开关决定直接播放默认 Profile，或打开居中的 **Profile 选择**窗口。
 - 带 `--bridge-profile=<ProfileID>`：跳过选择窗口，直接锁定指定 Profile。
 
-选择窗口支持数字键 `1–9`、Enter 确认、Esc 取消和双击启动。默认 Profile
-只用于预选，不会让外部媒体调用绕过选择界面。
+选择窗口支持数字键 `1–9`、Enter 确认、Esc 取消和双击启动。关闭“直接使用
+默认项”时，默认 Profile 只用于预选；打开开关后则直接使用当前默认项播放。
 
 ## Profile 管理
 
 管理窗口可以新建、编辑、删除 Profile，浏览选择 `mpv.exe`，以及设置默认
 Profile。配置保存在程序同目录的 `profiles.ini`，使用 Win32 Profile API
-读写。启动时若文件不存在，程序会提示并生成 UTF-16 LE 模板，然后继续打开
-MPVBridge；首次双击启动会直接进入 Profile 管理界面完成路径配置。
+读写。启动时若文件不存在，程序会静默生成 UTF-16 LE 模板；首次双击启动会
+直接进入 Profile 管理界面完成路径配置，不再额外弹出 INI 修改提示。
 
 ```ini
 [General]
 DefaultProfile=HQ_Anime
+SkipProfilePicker=0
 EnableLogging=0
 AutoLaunchSeconds=3
 
@@ -36,6 +38,11 @@ Path=C:\Tools\MPV_HQ\mpv.exe
 Profile 卡片支持直接拖动排序。拖动中的卡片会跟随鼠标，靠近有效落点时
 相邻卡片会让出一个卡片高度的空间；在有效空位松手才会保存新的 `Order`，
 在列表外或非落点区域松手则回到原位。
+
+从空列表新建的第一个 Profile 会自动成为默认项。删除默认 Profile 时，
+默认项会按当前列表顺序移到下一个；如果删除的是列表末项，则循环到第一个。
+删除全部 Profile 后会清空 `DefaultProfile`；此时收到播放请求会提示“无可用 MPV
+播放器”，不会继续尝试已删除的程序。
 
 ## 媒体文件关联
 
@@ -116,8 +123,9 @@ Profile 管理窗口的“系统集成”区域提供 `mpvbridge://` 的注册�
 mpvbridge://MPV?<UTF-8 MPV 参数的 Base64URL>
 ```
 
-MPVBridge 会验证并解码载荷，然后直接打开 Profile 选择窗口。普通双击且没有
-媒体参数时仍然打开 Profile 管理窗口，两条启动路径互不混淆。
+MPVBridge 会验证并解码载荷；只有一个 Profile 时直接使用它播放，有多个时根据
+“直接使用默认项”开关选择默认 Profile 或打开选择窗口。普通双击且没有媒体参数
+时仍然打开 Profile 管理窗口，两条启动路径互不混淆。
 
 ### 油猴网页集成
 
@@ -152,11 +160,25 @@ YouTube yt-dlp 请求启用 Node.js EJS 运行时，并使用当前上游建议�
 普通程序调用不启用上述集成，MPVBridge 不会解析或接管调用方自行提供的
 `--input-ipc-server`；没有油猴专用参数的命令行继续按原始字符透传。
 
+## 直接使用默认 Profile
+
+管理窗口“系统集成”区域的“多 Profile 时直接使用默认项”开关默认关闭。打开后，
+外部媒体调用会跳过 Profile 选择窗口并使用当前默认 Profile；列表中的任意 Profile
+都可以先选中，再通过“设为默认”按钮成为新的默认项，后续播放会立即改用它。
+
+```ini
+[General]
+SkipProfilePicker=1
+```
+
+如果默认 Profile 不存在，MPVBridge 会回退到选择窗口，以便重新选择和修复配置。
+无论此开关是否打开，列表中只有一个 Profile 时都会直接使用它播放。
+
 ## 默认 Profile 自动进入
 
-外部媒体调用打开 Profile 选择窗口时，如果默认 Profile 有效，MPVBridge 会在
-设定秒数后自动开始播放。倒计时期间点击、滚动、按键或操作窗口会取消本次
-自动进入。延迟可在管理窗口“系统集成”区域按秒调整：
+存在多个 Profile、直接播放开关关闭且外部媒体调用打开选择窗口时，如果默认
+Profile 有效，MPVBridge 会在设定秒数后自动开始播放。倒计时期间点击、滚动、
+按键或操作窗口会取消本次自动进入。延迟可在管理窗口“系统集成”区域按秒调整：
 
 ```ini
 [General]

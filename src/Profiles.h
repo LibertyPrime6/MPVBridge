@@ -24,12 +24,14 @@ public:
 
     std::vector<Profile> Load() const;
     std::wstring DefaultId() const;
+    bool SkipProfilePicker() const;
     bool LoggingEnabled() const;
     int AutoLaunchSeconds() const;
     bool Save(const Profile& profile, std::wstring_view originalId,
               std::wstring& error) const;
     bool Delete(std::wstring_view id, std::wstring& error) const;
     bool SetDefault(std::wstring_view id, std::wstring& error) const;
+    bool SetSkipProfilePicker(bool enabled, std::wstring& error) const;
     bool SetLoggingEnabled(bool enabled, std::wstring& error) const;
     bool SetAutoLaunchSeconds(int seconds, std::wstring& error) const;
     bool SaveOrder(const std::vector<std::wstring>& profileIds,
@@ -40,7 +42,7 @@ private:
     std::filesystem::path applicationDirectory_;
 };
 
-bool EnsureProfilesIni(const std::filesystem::path& iniPath, bool& created,
+bool EnsureProfilesIni(const std::filesystem::path& iniPath,
                        std::wstring& error);
 void OpenIniInNotepad(const std::filesystem::path& iniPath, HWND owner = nullptr);
 void OpenIniWithDefaultApp(const std::filesystem::path& iniPath,

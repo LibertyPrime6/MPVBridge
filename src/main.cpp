@@ -67,17 +67,11 @@ int Run(HINSTANCE instance) {
 
     const fs::path applicationDirectory = GetModulePath().parent_path();
     const fs::path iniPath = applicationDirectory / L"profiles.ini";
-    bool created = false;
     std::wstring error;
-    if (!EnsureProfilesIni(iniPath, created, error)) {
+    if (!EnsureProfilesIni(iniPath, error)) {
         ShowError(L"无法准备 profiles.ini：\n" + iniPath.wstring() +
                   L"\n\n" + error);
         return 2;
-    }
-    if (created) {
-        ShowInfo(L"已生成 profiles.ini 模板。\n\n"
-                 L"MPVBridge 将继续启动。请在 Profile 管理界面中填写实际的 "
-                 L"mpv.exe 路径。" );
     }
 
     ProfileStore store(iniPath, applicationDirectory);
@@ -103,11 +97,18 @@ int Run(HINSTANCE instance) {
 
     // Only a plain double-click has no media arguments and opens management.
     // A decoded mpvbridge:// payload always contains MPV arguments, so it goes
-    // directly to the Profile picker below.
+    // directly to the playback flow below (with selection only when needed).
     if (!parsed.requestedProfile.has_value() &&
         !HasVisibleText(parsed.passThroughTail)) {
         WriteDiagnosticLog(store, L"启动模式：Profile 管理");
         return RunProfileManager(instance, store);
+    }
+
+    if (store.Load().empty()) {
+        WriteDiagnosticLog(store, L"无可用 Profile，无法开始播放");
+        ShowError(L"无可用 MPV 播放器。\n\n"
+                  L"请双击 MPVBridge 打开 Profile 管理并添加 mpv.exe。");
+        return 2;
     }
 
     std::wstring selectedId;
@@ -128,17 +129,37 @@ int Run(HINSTANCE instance) {
             (protocolRequest.matched ? L"启动模式：mpvbridge:// 网页调用；参数字符数="
                                      : L"启动模式：外部媒体调用；参数字符数=") +
                 std::to_wstring(parsed.passThroughTail.size()));
-        const ProfilePickerResult choice = RunProfilePicker(instance, store);
-        if (!choice.profileId.has_value()) {
-            WriteDiagnosticLog(store, L"用户取消了外部媒体调用");
-            return ERROR_CANCELLED;
-        }
-        selectedId = *choice.profileId;
-        if (choice.setAsDefault) {
-            if (!store.SetDefault(selectedId, error)) {
-                ShowError(L"无法更新默认 Profile：\n" + error);
+        const std::vector<Profile> candidates = store.Load();
+        if (candidates.size() == 1) {
+            selectedId = candidates.front().id;
+            WriteDiagnosticLog(store,
+                               L"仅有一个 Profile，跳过选择窗口：" +
+                                   selectedId);
+        } else if (store.SkipProfilePicker()) {
+            const std::wstring defaultId = store.DefaultId();
+            if (FindProfile(candidates, defaultId) != nullptr) {
+                selectedId = defaultId;
+                WriteDiagnosticLog(
+                    store, L"已启用直接播放，跳过选择窗口并使用默认 Profile：" +
+                               selectedId);
             } else {
-                WriteDiagnosticLog(store, L"默认 Profile 已设为：" + selectedId);
+                WriteDiagnosticLog(
+                    store, L"已启用直接播放，但默认 Profile 不存在；显示选择窗口");
+            }
+        }
+        if (selectedId.empty()) {
+            const ProfilePickerResult choice = RunProfilePicker(instance, store);
+            if (!choice.profileId.has_value()) {
+                WriteDiagnosticLog(store, L"用户取消了外部媒体调用");
+                return ERROR_CANCELLED;
+            }
+            selectedId = *choice.profileId;
+            if (choice.setAsDefault) {
+                if (!store.SetDefault(selectedId, error)) {
+                    ShowError(L"无法更新默认 Profile：\n" + error);
+                } else {
+                    WriteDiagnosticLog(store, L"默认 Profile 已设为：" + selectedId);
+                }
             }
         }
     }
