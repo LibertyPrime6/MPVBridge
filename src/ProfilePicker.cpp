@@ -25,7 +25,7 @@ enum ControlId : int {
     IdLaunch,
     IdManage,
     IdCancel,
-    IdRemember,
+    IdSetDefault,
     IdStatus,
     IdQuickBase = 400,
 };
@@ -56,7 +56,7 @@ struct PickerState {
     HWND list{};
     HWND status{};
     HWND launch{};
-    HWND remember{};
+    HWND setDefault{};
     bool positionSelectionAfterLayout{};
 };
 
@@ -160,8 +160,8 @@ void Layout(PickerState& state) {
                  client.bottom - listTop - footerHeight, SWP_NOZORDER);
     SetWindowPos(state.status, nullptr, margin, client.bottom - S(state, 101),
                  client.right - margin * 2, S(state, 24), SWP_NOZORDER);
-    SetWindowPos(state.remember, nullptr, margin, client.bottom - S(state, 67),
-                 S(state, 210), S(state, 28), SWP_NOZORDER);
+    SetWindowPos(state.setDefault, nullptr, margin, client.bottom - S(state, 70),
+                 S(state, 150), S(state, 34), SWP_NOZORDER);
     SetWindowPos(GetDlgItem(state.window, IdManage), nullptr,
                  client.right - margin - S(state, 286), client.bottom - S(state, 70),
                  S(state, 90), S(state, 34), SWP_NOZORDER);
@@ -179,6 +179,10 @@ void UpdateSelectionState(PickerState& state) {
     bool valid = index >= 0 && static_cast<size_t>(index) < state.profiles.size() &&
                  IsUsableExecutable(state.profiles[static_cast<size_t>(index)].executable);
     EnableWindow(state.launch, valid ? TRUE : FALSE);
+    const bool canSetDefault =
+        valid && !EqualsInsensitive(state.profiles[static_cast<size_t>(index)].id,
+                                    state.defaultId);
+    EnableWindow(state.setDefault, canSetDefault ? TRUE : FALSE);
     if (index < 0 || static_cast<size_t>(index) >= state.profiles.size()) {
         ui::SetWindowTextString(state.status, L"没有可选择的 Profile，请先打开管理界面添加。" );
     } else if (valid && state.autoLaunchActive) {
@@ -267,9 +271,33 @@ void AcceptSelection(PickerState& state) {
         return;
     }
     state.result.profileId = profile.id;
-    state.result.setAsDefault =
-        SendMessageW(state.remember, BM_GETCHECK, 0, 0) == BST_CHECKED;
     DestroyWindow(state.window);
+}
+
+void SetSelectedAsDefault(PickerState& state) {
+    const int index =
+        static_cast<int>(SendMessageW(state.list, LB_GETCURSEL, 0, 0));
+    if (index < 0 || static_cast<size_t>(index) >= state.profiles.size()) return;
+
+    const Profile& profile = state.profiles[static_cast<size_t>(index)];
+    if (!IsUsableExecutable(profile.executable) ||
+        EqualsInsensitive(profile.id, state.defaultId)) {
+        return;
+    }
+
+    std::wstring error;
+    if (!state.store->SetDefault(profile.id, error)) {
+        ShowError(L"设置默认 Profile 失败：\n" + error, state.window);
+        return;
+    }
+
+    state.defaultId = profile.id;
+    WriteDiagnosticLog(*state.store, L"默认 Profile 已设为：" + profile.id);
+    UpdateSelectionState(state);
+    ui::SetWindowTextString(state.status,
+                            L"✓ 默认 Profile 已更新为“" + profile.name + L"”");
+    InvalidateRect(state.status, nullptr, TRUE);
+    InvalidateRect(state.list, nullptr, TRUE);
 }
 
 void DrawPickerItem(PickerState& state, const DRAWITEMSTRUCT& item) {
@@ -371,13 +399,13 @@ void CreateControls(PickerState& state) {
     SetWindowSubclass(state.list, PickerListSubclassProc,
                       kPickerListSubclass, 0);
     state.status = Control(state, L"STATIC", L"", SS_LEFT, IdStatus);
-    state.remember = Control(state, L"BUTTON", L"设为默认 Profile",
-                             WS_TABSTOP | BS_AUTOCHECKBOX, IdRemember);
+    state.setDefault = Control(state, L"BUTTON", L"设为默认 Profile",
+                               WS_TABSTOP | BS_PUSHBUTTON, IdSetDefault);
     Control(state, L"BUTTON", L"管理", WS_TABSTOP, IdManage);
     Control(state, L"BUTTON", L"取消", WS_TABSTOP, IdCancel);
     state.launch = Control(state, L"BUTTON", L"开始播放",
                            WS_TABSTOP | BS_DEFPUSHBUTTON, IdLaunch);
-    ui::StyleButton(state.remember, ui::ButtonStyle::Toggle,
+    ui::StyleButton(state.setDefault, ui::ButtonStyle::Secondary,
                     ui::kBackground);
     ui::StyleButton(GetDlgItem(state.window, IdManage),
                     ui::ButtonStyle::Secondary, ui::kBackground);
@@ -555,6 +583,10 @@ LRESULT CALLBACK WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lPa
         }
         if (id == IdLaunch) {
             AcceptSelection(*state);
+            return 0;
+        }
+        if (id == IdSetDefault) {
+            SetSelectedAsDefault(*state);
             return 0;
         }
         if (id == IdManage) {

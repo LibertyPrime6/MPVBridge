@@ -7,7 +7,6 @@
 
 struct ProfilePickerResult {
     std::optional<std::wstring> profileId;
-    bool setAsDefault{};
 };
 
 ProfilePickerResult RunProfilePicker(HINSTANCE instance, ProfileStore& store,

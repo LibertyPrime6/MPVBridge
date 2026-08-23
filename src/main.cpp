@@ -154,13 +154,6 @@ int Run(HINSTANCE instance) {
                 return ERROR_CANCELLED;
             }
             selectedId = *choice.profileId;
-            if (choice.setAsDefault) {
-                if (!store.SetDefault(selectedId, error)) {
-                    ShowError(L"无法更新默认 Profile：\n" + error);
-                } else {
-                    WriteDiagnosticLog(store, L"默认 Profile 已设为：" + selectedId);
-                }
-            }
         }
     }
 
